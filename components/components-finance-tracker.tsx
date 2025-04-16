@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Line, Bar, PolarArea, Doughnut, Radar } from 'react-chartjs-2'
+import { Line, PolarArea, } from 'react-chartjs-2'
 import { 
   Chart as ChartJS, 
   CategoryScale, 
@@ -25,11 +25,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ArrowUpRight, ArrowDownRight, DollarSign, PiggyBank, Trash2, Github, Linkedin, Globe, Settings, Download, Upload, Target, AlertTriangle, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, DollarSign, PiggyBank, Trash2, Settings, Download, Upload, Target, AlertTriangle, TrendingUp } from 'lucide-react'
 
 ChartJS.register(
   CategoryScale,
@@ -160,39 +159,17 @@ export default function FinanceTracker() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [goals, setGoals] = useState<Goal[]>([])
   const [newTransaction, setNewTransaction] = useState({ description: '', amount: '', type: 'expense' as 'income' | 'expense', category: '', date: new Date().toISOString().split('T')[0], account: 'chequing' as 'chequing' | 'savings' })
-  const [newGoal, setNewGoal] = useState({ name: '', target: '', current: '', deadline: '' })
   const [showQuestionnaire, setShowQuestionnaire] = useState(true)
   const [userData, setUserData] = useState<UserData>({ name: '', chequingBalance: '', savingsBalance: '', monthlyIncome: '', monthlyExpenses: '' })
   const [errors, setErrors] = useState<Partial<UserData>>({})
   const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([])
-  const [newBudgetCategory, setNewBudgetCategory] = useState({ category: '', limit: '' })
   const [financialHealthScore, setFinancialHealthScore] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
-  const [showResetDialog, setShowResetDialog] = useState(false)
-  const [showTosDialog, setShowTosDialog] = useState(false)
   const { toast } = useToast()
 
   // New state for investments and cryptocurrencies
   const [investments, setInvestments] = useState<Investment[]>([])
-  const [newInvestment, setNewInvestment] = useState({ type: 'RRSP' as 'RRSP' | 'TFSA' | 'GIC' | 'OSAP', balance: '', interestRate: '', maturityDate: '' })
   const [cryptocurrencies, setCryptocurrencies] = useState<Cryptocurrency[]>([])
-  const [newCryptocurrency, setNewCryptocurrency] = useState({ name: '', symbol: '', amount: '', purchasePrice: '', currentPrice: '' })
-
-  const getInvestmentDiversificationScore = (): number => {
-    const totalInvestments = investments.reduce((sum, inv) => sum + inv.balance, 0)
-    const totalCryptoValue = cryptocurrencies.reduce((sum, crypto) => sum + crypto.amount * crypto.currentPrice, 0)
-    const totalInvestedValue = totalInvestments + totalCryptoValue
-
-    if (totalInvestedValue === 0) return 0
-
-    const investmentTypes = new Set(investments.map(inv => inv.type))
-    const cryptoCount = cryptocurrencies.length
-
-    // Calculate diversification score based on number of investment types and crypto holdings
-    const diversificationScore = (investmentTypes.size * 10) + (cryptoCount * 5)
-
-    return Math.min(diversificationScore, 100)
-  }
 
   useEffect(() => {
     const storedData = localStorage.getItem('financeTrackerData')
@@ -329,34 +306,7 @@ export default function FinanceTracker() {
     }
   }
 
-  const addGoal = () => {
-    if (newGoal.name && newGoal.target && newGoal.current && newGoal.deadline) {
-      if (!validateNumber(newGoal.target) || !validateNumber(newGoal.current)) {
-        toast({
-          description: 'Please enter valid numbers for goal amounts',
-        })
-        return
-      }
-      const goal: Goal = {
-        id: goals.length + 1,
-        name: newGoal.name,
-        target: parseFloat(newGoal.target),
-        current: parseFloat(newGoal.current),
-        deadline: newGoal.deadline,
-      }
-      const updatedGoals = [...goals, goal]
-      setGoals(updatedGoals)
-      setNewGoal({ name: '', target: '', current: '', deadline: '' })
-      saveData()
-      toast({
-        description: 'Goal added successfully',
-      })
-    } else {
-      toast({
-        description: 'Please fill in all fields for the goal',
-      })
-    }
-  }
+
 
   const updateFinances = (amount: number, account: 'chequing' | 'savings') => {
     if (account === 'chequing') {
@@ -381,31 +331,6 @@ export default function FinanceTracker() {
     )
   }
 
-  const addBudgetCategory = () => {
-    if (newBudgetCategory.category && newBudgetCategory.limit) {
-      if (!validateNumber(newBudgetCategory.limit)) {
-        toast({
-          description: 'Please enter a valid budget limit',
-        })
-        return
-      }
-      const category: BudgetCategory = {
-        category: newBudgetCategory.category,
-        limit: parseFloat(newBudgetCategory.limit),
-      }
-      const updatedCategories = [...budgetCategories, category]
-      setBudgetCategories(updatedCategories)
-      setNewBudgetCategory({ category: '', limit: '' })
-      saveData()
-      toast({
-        description: 'Budget category added successfully',
-      })
-    } else {
-      toast({
-        description: 'Please fill in all fields for the budget category',
-      })
-    }
-  }
 
   const deleteTransaction = (id: number) => {
     const transactionToDelete = transactions.find(t => t.id === id)
@@ -420,45 +345,6 @@ export default function FinanceTracker() {
     }
   }
 
-  const deleteGoal = (id: number) => {
-    const updatedGoals = goals.filter(g => g.id !== id)
-    setGoals(updatedGoals)
-    saveData()
-    toast({
-      description: 'Goal deleted successfully',
-    })
-  }
-
-  const deleteBudgetCategory = (category: string) => {
-    const updatedCategories = budgetCategories.filter(c => c.category !== category)
-    setBudgetCategories(updatedCategories)
-    saveData()
-    toast({
-      description: 'Budget category deleted successfully',
-    })
-  }
-
-  const getCategoryData = () => {
-    return categories.map(category => {
-      const total = transactions
-        .filter(t => t.category === category && t.type === 'expense')
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-      return total
-    })
-  }
-
-  const getBudgetComparisonData = () => {
-    return budgetCategories.map(bc => {
-      const spent = transactions
-        .filter(t => t.category === bc.category && t.type === 'expense')
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0)
-      return {
-        category: bc.category,
-        limit: bc.limit,
-        spent: spent,
-      }
-    })
-  }
 
   const generateBudgetRecommendations = (): Recommendation[] => {
     const recommendations: Recommendation[] = []
@@ -585,112 +471,23 @@ export default function FinanceTracker() {
     }
   }
 
-  const getDetailedSpendingTrendsData = () => {
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-    const currentDate = new Date()
-    const labels = Array.from({length: 12}, (_, i) => {
-      const d = new Date(currentDate.getFullYear(), currentDate.getMonth() - 11 + i, 1)
-      return monthNames[d.getMonth()]
-    })
-
-    const incomeData = Array(12).fill(0)
-    const expenseData = Array(12).fill(0)
-
-    transactions.forEach(transaction => {
-      const transactionDate = new Date(transaction.date)
-      const monthIndex = 11 - (currentDate.getMonth() - transactionDate.getMonth() + (currentDate.getFullYear() - transactionDate.getFullYear()) * 12)
-      if (monthIndex >= 0 && monthIndex < 12) {
-        if (transaction.type === 'income') {
-          incomeData[monthIndex] += transaction.amount
-        } else {
-          expenseData[monthIndex] += Math.abs(transaction.amount)
-        }
-      }
-    })
-
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Income',
-          data: incomeData,
-          borderColor: 'rgb(75, 192, 192)',
-          backgroundColor: 'rgba(75, 192, 192, 0.5)',
-          tension: 0.1,
-        },
-        {
-          label: 'Expenses',
-          data: expenseData,
-          borderColor: 'rgb(255, 99, 132)',
-          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-          tension: 0.1,
-        },
-      ],
-    }
-  }
-
-  const barChartData = {
-    labels: categories,
-    datasets: [
-      {
-        label: 'Expenses by Category',
-        data: getCategoryData(),
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.6)',
-          'rgba(54, 162, 235, 0.6)',
-          'rgba(255, 206, 86, 0.6)',
-          'rgba(75, 192, 192, 0.6)',
-          'rgba(153, 102, 255, 0.6)',
-          'rgba(255, 159, 64, 0.6)',
-          'rgba(199, 199, 199, 0.6)',
-          'rgba(83, 102, 255, 0.6)',
-          'rgba(40, 159, 64, 0.6)',
-          'rgba(206, 102, 255, 0.6)',
-        ],
-      },
-    ],
-  }
-
-  const radarChartData = {
-    labels: ['Savings Rate', 'Debt Management', 'Expense Control', 'Income Growth', 'Investment Diversification'],
-    datasets: [
-      {
-        label: 'Financial Health',
-        data: [
-          income > 0 ? Math.min((savingsBalance / income) * 100, 100) : 0,
-          income > 0 ? Math.min(100 - (Math.max(0, -chequingBalance) / income) * 100, 100) : 0,
-          income > 0 ? Math.min(100 - (expenses / income) * 100, 100) : 0,
-          (expenses + savingsBalance) > 0 ? Math.min((income / (expenses + savingsBalance)) * 100, 100) : 0,
-          getInvestmentDiversificationScore(),
-        ],
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgb(75, 192, 192)',
-        pointBackgroundColor: 'rgb(75, 192, 192)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgb(75, 192, 192)',
-      },
-    ],
-  }
-
-  const resetAllData = () => {
-    localStorage.removeItem('financeTrackerData')
-    setChequingBalance(0)
-    setSavingsBalance(0)
-    setIncome(0)
-    setExpenses(0)
-    setTransactions([])
-    setGoals([])
-    setBudgetCategories([])
-    setInvestments([])
-    setCryptocurrencies([])
-    setUserData({ name: '', chequingBalance: '', savingsBalance: '', monthlyIncome: '', monthlyExpenses: '' })
-    setShowQuestionnaire(true)
-    setShowResetDialog(false)
-    toast({
-      description: 'All data has been reset. Please enter your initial information.',
-    })
-  }
+  // const resetAllData = () => {
+  //   localStorage.removeItem('financeTrackerData')
+  //   setChequingBalance(0)
+  //   setSavingsBalance(0)
+  //   setIncome(0)
+  //   setExpenses(0)
+  //   setTransactions([])
+  //   setGoals([])
+  //   setBudgetCategories([])
+  //   setInvestments([])
+  //   setCryptocurrencies([])
+  //   setUserData({ name: '', chequingBalance: '', savingsBalance: '', monthlyIncome: '', monthlyExpenses: '' })
+  //   setShowQuestionnaire(true)
+  //   toast({
+  //     description: 'All data has been reset. Please enter your initial information.',
+  //   })
+  // }
 
   const handleSettingsChange = (field: keyof UserData, value: string) => {
     setUserData(prev => ({ ...prev, [field]: value }))
@@ -765,117 +562,6 @@ export default function FinanceTracker() {
         }
       }
       reader.readAsText(file)
-    }
-  }
-
-  const addInvestment = () => {
-    if (newInvestment.type && newInvestment.balance) {
-      if (!validateNumber(newInvestment.balance)) {
-        toast({
-          description: 'Please enter a valid balance',
-        })
-        return
-      }
-      const investment: Investment = {
-        id: investments.length + 1,
-        type: newInvestment.type,
-        balance: parseFloat(newInvestment.balance),
-        interestRate: newInvestment.interestRate ? parseFloat(newInvestment.interestRate) : undefined,
-        maturityDate: newInvestment.maturityDate || undefined,
-      }
-      const updatedInvestments = [...investments, investment]
-      setInvestments(updatedInvestments)
-      setNewInvestment({ type: 'RRSP', balance: '', interestRate: '', maturityDate: '' })
-      saveData()
-      toast({
-        description: 'Investment added successfully',
-      })
-    } else {
-      toast({
-        description: 'Please fill in all required fields for the investment',
-      })
-    }
-  }
-
-  const deleteInvestment = (id: number) => {
-    const updatedInvestments = investments.filter(inv => inv.id !== id)
-    setInvestments(updatedInvestments)
-    saveData()
-    toast({
-      description: 'Investment deleted successfully',
-    })
-  }
-
-  const addCryptocurrency = () => {
-    if (newCryptocurrency.name && newCryptocurrency.symbol && newCryptocurrency.amount && newCryptocurrency.purchasePrice && newCryptocurrency.currentPrice) {
-      if (!validateNumber(newCryptocurrency.amount) || !validateNumber(newCryptocurrency.purchasePrice) || !validateNumber(newCryptocurrency.currentPrice)) {
-        toast({
-          description: 'Please enter valid numbers for amount and prices',
-        })
-        return
-      }
-      const crypto: Cryptocurrency = {
-        id: cryptocurrencies.length + 1,
-        name: newCryptocurrency.name,
-        symbol: newCryptocurrency.symbol,
-        amount: parseFloat(newCryptocurrency.amount),
-        purchasePrice: parseFloat(newCryptocurrency.purchasePrice),
-        currentPrice: parseFloat(newCryptocurrency.currentPrice),
-      }
-      const updatedCryptocurrencies = [...cryptocurrencies, crypto]
-      setCryptocurrencies(updatedCryptocurrencies)
-      setNewCryptocurrency({ name: '', symbol: '', amount: '', purchasePrice: '', currentPrice: '' })
-      saveData()
-      toast({
-        description: 'Cryptocurrency added successfully',
-      })
-    } else {
-      toast({
-        description: 'Please fill in all fields for the cryptocurrency',
-      })
-    }
-  }
-
-  const deleteCryptocurrency = (id: number) => {
-    const updatedCryptocurrencies = cryptocurrencies.filter(crypto => crypto.id !== id)
-    setCryptocurrencies(updatedCryptocurrencies)
-    saveData()
-    toast({
-      description: 'Cryptocurrency deleted successfully',
-    })
-  }
-
-  const getInvestmentBreakdownData = () => {
-    const investmentData = investments.reduce((acc, inv) => {
-      acc[inv.type] = (acc[inv.type] || 0) + inv.balance
-      return acc
-    }, {} as Record<string, number>)
-
-    const totalCryptoValue = cryptocurrencies.reduce((sum, crypto) => sum + crypto.amount * crypto.currentPrice, 0)
-    investmentData['Crypto'] = totalCryptoValue
-
-    return {
-      labels: Object.keys(investmentData),
-      datasets: [
-        {
-          data: Object.values(investmentData),
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.6)',
-            'rgba(54, 162, 235, 0.6)',
-            'rgba(255, 206, 86, 0.6)',
-            'rgba(75, 192, 192, 0.6)',
-            'rgba(153, 102, 255, 0.6)',
-          ],
-          borderColor: [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-          ],
-          borderWidth: 1,
-        },
-      ],
     }
   }
 
@@ -958,15 +644,9 @@ export default function FinanceTracker() {
       <header className="sticky top-0 z-40 bg-gray-800 shadow-md">
         <nav className="container mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="text-xl font-bold">FinancialFlow 💸</div>
             <div className="flex space-x-4">
               <Button variant="ghost" onClick={() => setActiveTab('dashboard')}>Dashboard</Button>
               <Button variant="ghost" onClick={() => setActiveTab('transactions')}>Transactions</Button>
-              <Button variant="ghost" onClick={() => setActiveTab('goals')}>Goals</Button>
-              <Button variant="ghost" onClick={() => setActiveTab('budget')}>Budget</Button>
-              <Button variant="ghost" onClick={() => setActiveTab('portfolio')}>Portfolio</Button>
-              <Button variant="ghost" onClick={() => setActiveTab('crypto')}>Crypto</Button>
-              <Button variant="ghost" onClick={() => setActiveTab('insights')}>Insights</Button>
             </div>
             <div className="flex items-center space-x-2">
               <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}>
@@ -1041,11 +721,7 @@ export default function FinanceTracker() {
           <TabsList className="grid w-full grid-cols-7 bg-gray-800">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-gray-700 text-white">Dashboard</TabsTrigger>
             <TabsTrigger value="transactions" className="data-[state=active]:bg-gray-700 text-white">Transactions</TabsTrigger>
-            <TabsTrigger value="goals" className="data-[state=active]:bg-gray-700 text-white">Goals</TabsTrigger>
-            <TabsTrigger value="budget" className="data-[state=active]:bg-gray-700 text-white">Budget</TabsTrigger>
-            <TabsTrigger value="portfolio" className="data-[state=active]:bg-gray-700 text-white">Portfolio</TabsTrigger>
-            <TabsTrigger value="crypto" className="data-[state=active]:bg-gray-700 text-white">Crypto</TabsTrigger>
-            <TabsTrigger value="insights" className="data-[state=active]:bg-gray-700 text-white">Insights</TabsTrigger>
+            
           </TabsList>
           <TabsContent value="dashboard">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -1253,465 +929,11 @@ export default function FinanceTracker() {
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="goals">
-            <Card>
-              <CardHeader>
-                <CardTitle>Financial Goals</CardTitle>
-                <CardDescription>Track your savings goals</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 mb-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                    <Input
-                      placeholder="Goal Name"
-                      value={newGoal.name}
-                      onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Target Amount"
-                      value={newGoal.target}
-                      onChange={(e) => setNewGoal({ ...newGoal, target: e.target.value })}
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Current Amount"
-                      value={newGoal.current}
-                      onChange={(e) => setNewGoal({ ...newGoal, current: e.target.value })}
-                    />
-                    <Input
-                      type="date"
-                      placeholder="Deadline"
-                      value={newGoal.deadline}
-                      onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
-                    />
-                    <Button onClick={addGoal}>Add Goal</Button>
-                  </div>
-                </div>
-                <ScrollArea className="h-[400px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Goal</TableHead>
-                        <TableHead>Target</TableHead>
-                        <TableHead>Current</TableHead>
-                        <TableHead>Deadline</TableHead>
-                        <TableHead>Progress</TableHead>
-                        <TableHead>Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {goals.map((goal) => (
-                        <TableRow key={goal.id}>
-                          <TableCell>{goal.name}</TableCell>
-                          <TableCell>{formatCurrency(goal.target)}</TableCell>
-                          <TableCell>{formatCurrency(goal.current)}</TableCell>
-                          <TableCell>{goal.deadline}</TableCell>
-                          <TableCell>
-                            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 overflow-hidden">
-                              <div
-                                className="bg-blue-600 h-2.5 rounded-full"
-                                style={{ width: `${Math.min((goal.current / goal.target) * 100, 100)}%` }}
-                              ></div>
-                            </div>
-                            <span className="text-sm">{((goal.current / goal.target) * 100).toFixed(1)}%</span>
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm" onClick={() => deleteGoal(goal.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="budget">
-            <Card>
-              <CardHeader>
-                <CardTitle>Budget Management</CardTitle>
-                <CardDescription>Set and track your budget for different categories</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 mb-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Select
-                      value={newBudgetCategory.category}
-                      onValueChange={(value) => setNewBudgetCategory({ ...newBudgetCategory, category: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      type="text"
-                      placeholder="Budget Limit"
-                      value={newBudgetCategory.limit}
-                      onChange={(e) => setNewBudgetCategory({ ...newBudgetCategory, limit: e.target.value })}
-                    />
-                    <Button onClick={addBudgetCategory}>Add Budget Category</Button>
-                  </div>
-                </div>
-                <ScrollArea className="h-[400px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Budget Limit</TableHead>
-                        <TableHead>Spent</TableHead>
-                        <TableHead>Remaining</TableHead>
-                        <TableHead>Progress</TableHead>
-                        <TableHead>Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {getBudgetComparisonData().map((item) => (
-                        <TableRow key={item.category}>
-                          <TableCell>{item.category}</TableCell>
-                          <TableCell>{formatCurrency(item.limit)}</TableCell>
-                          <TableCell>{formatCurrency(item.spent)}</TableCell>
-                          <TableCell>{formatCurrency(item.limit - item.spent)}</TableCell>
-                          <TableCell>
-                            <Progress value={(item.spent / item.limit) * 100} className="w-[60%]" />
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm" onClick={() => deleteBudgetCategory(item.category)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="portfolio">
-            <Card>
-              <CardHeader>
-                <CardTitle>Investment Portfolio</CardTitle>
-                <CardDescription>Manage your investments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 mb-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-                    <Select
-                      value={newInvestment.type}
-                      onValueChange={(value: 'RRSP' | 'TFSA' | 'GIC' | 'OSAP') => setNewInvestment({ ...newInvestment, type: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="RRSP">RRSP</SelectItem>
-                        <SelectItem value="TFSA">TFSA</SelectItem>
-                        <SelectItem value="GIC">GIC</SelectItem>
-                        <SelectItem value="OSAP">OSAP</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      type="text"
-                      placeholder="Balance"
-                      value={newInvestment.balance}
-                      onChange={(e) => setNewInvestment({ ...newInvestment, balance: e.target.value })}
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Interest Rate (%)"
-                      value={newInvestment.interestRate}
-                      onChange={(e) => setNewInvestment({ ...newInvestment, interestRate: e.target.value })}
-                    />
-                    <Input
-                      type="date"
-                      placeholder="Maturity Date"
-                      value={newInvestment.maturityDate}
-                      onChange={(e) => setNewInvestment({ ...newInvestment, maturityDate: e.target.value })}
-                    />
-                    <Button onClick={addInvestment}>Add Investment</Button>
-                  </div>
-                </div>
-                <ScrollArea className="h-[400px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Balance</TableHead>
-                        <TableHead>Interest Rate</TableHead>
-                        <TableHead>Maturity Date</TableHead>
-                        <TableHead>Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {investments.map((investment) => (
-                        <TableRow key={investment.id}>
-                          <TableCell>{investment.type}</TableCell>
-                          <TableCell>{formatCurrency(investment.balance)}</TableCell>
-                          <TableCell>{investment.interestRate ? `${investment.interestRate}%` : 'N/A'}</TableCell>
-                          <TableCell>{investment.maturityDate || 'N/A'}</TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm" onClick={() => deleteInvestment(investment.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
-                <div className="mt-8">
-                  <h3 className="text-lg font-semibold mb-4">Investment Breakdown</h3>
-                  <div className="w-full max-w-md">
-                    <Doughnut
-                      data={getInvestmentBreakdownData()}
-                      options={{
-                        responsive: true,
-                        plugins: {
-                          legend: {
-                            position: 'bottom',
-                          },
-                          tooltip: {
-                            callbacks: {
-                              label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw as number;
-                                const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0) as number;
-                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
-                                return `${label}: ${formatCurrency(value)} (${percentage}%)`;
-                              }
-                            }
-                          }
-                        },
-                      }}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="crypto">
-            <Card>
-              <CardHeader>
-                <CardTitle>Cryptocurrency Holdings</CardTitle>
-                <CardDescription>Track your cryptocurrency investments</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 mb-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
-                    <Input
-                      placeholder="Name"
-                      value={newCryptocurrency.name}
-                      onChange={(e) => setNewCryptocurrency({ ...newCryptocurrency, name: e.target.value })}
-                    />
-                    <Input
-                      placeholder="Symbol"
-                      value={newCryptocurrency.symbol}
-                      onChange={(e) => setNewCryptocurrency({ ...newCryptocurrency, symbol: e.target.value })}
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Amount"
-                      value={newCryptocurrency.amount}
-                      onChange={(e) => setNewCryptocurrency({ ...newCryptocurrency, amount: e.target.value })}
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Purchase Price"
-                      value={newCryptocurrency.purchasePrice}
-                      onChange={(e) => setNewCryptocurrency({ ...newCryptocurrency, purchasePrice: e.target.value })}
-                    />
-                    <Input
-                      type="text"
-                      placeholder="Current Price"
-                      value={newCryptocurrency.currentPrice}
-                      onChange={(e) => setNewCryptocurrency({ ...newCryptocurrency, currentPrice: e.target.value })}
-                    />
-                    <Button onClick={addCryptocurrency}>Add Cryptocurrency</Button>
-                  </div>
-                </div>
-                <ScrollArea className="h-[400px]">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Symbol</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Purchase Price</TableHead>
-                        <TableHead>Current Price</TableHead>
-                        <TableHead>Total Value</TableHead>
-                        <TableHead>Profit/Loss</TableHead>
-                        <TableHead>Action</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {cryptocurrencies.map((crypto) => (
-                        <TableRow key={crypto.id}>
-                          <TableCell>{crypto.name}</TableCell>
-                          <TableCell>{crypto.symbol}</TableCell>
-                          <TableCell>{crypto.amount}</TableCell>
-                          <TableCell>{formatCurrency(crypto.purchasePrice)}</TableCell>
-                          <TableCell>{formatCurrency(crypto.currentPrice)}</TableCell>
-                          <TableCell>{formatCurrency(crypto.amount * crypto.currentPrice)}</TableCell>
-                          <TableCell className={crypto.currentPrice > crypto.purchasePrice ? 'text-green-500' : 'text-red-500'}>
-                            {formatCurrency((crypto.currentPrice - crypto.purchasePrice) * crypto.amount)}
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm" onClick={() => deleteCryptocurrency(crypto.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="insights">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Spending Trends (12 Months)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Line data={getDetailedSpendingTrendsData()} options={{ responsive: true }} />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Expenses by Category</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Bar data={barChartData} options={{ responsive: true }} />
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Financial Health Score</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-6xl font-bold mb-2">{financialHealthScore.toFixed(0)}</div>
-                    <p className="text-xl font-semibold mb-4">
-                      {financialHealthScore >= 80 ? '🌟 Excellent' :
-                       financialHealthScore >= 60 ? '👍 Good' :
-                       financialHealthScore >= 40 ? '😐 Fair' : '😟 Needs Improvement'}
-                    </p>
-                  </div>
-                  <div className="mt-6 text-lg space-y-4">
-                    {financialHealthScore >= 80 && (
-                      <>
-                        <p>🏆 Congratulations on your excellent financial health! You&apos;re a true money maestro.</p>
-                        <p>💰 Your smart decisions have paid off, creating a solid foundation for your future.</p>
-                        <p>🚀 Next steps:</p>
-                        <ul className="list-disc list-inside pl-4 space-y-2">
-                          <li>Keep maximizing your savings</li>
-                          <li>Explore diverse investment opportunities</li>
-                          <li>Stay informed about market trends</li>
-                          <li>Consider setting more ambitious financial goals, like early retirement or starting a passion project</li>
-                          <li>Think about mentoring others or contributing to charitable causes you care about</li>
-                        </ul>
-                        <p>Remember, even at the top, there&apos;s always room for growth! 🌟</p>
-                      </>
-                    )}
-                    {financialHealthScore >= 60 && financialHealthScore < 80 && (
-                      <>
-                        <p>👍 Good job on maintaining a healthy financial status! You&apos;re on the right track.</p>
-                        <p>📈 There&apos;s potential for even greater success. Here&apos;s how to level up:</p>
-                        <ul className="list-disc list-inside pl-4 space-y-2">
-                          <li>Fine-tune your budget to increase your savings rate</li>
-                          <li>Look for areas to trim unnecessary expenses without sacrificing quality of life</li>
-                          <li>Consider automating your savings</li>
-                          <li>Explore new investment avenues to diversify your portfolio</li>
-                          <li>Review and possibly increase your insurance coverage to protect your growing assets</li>
-                        </ul>
-                        <p>With a few tweaks, you could soon join the ranks of financial excellence! 💪</p>
-                      </>
-                    )}
-                    {financialHealthScore >= 40 && financialHealthScore < 60 && (
-                      <>
-                        <p>⚖️ Your financial health is fair, which means you have a solid foundation to build upon.</p>
-                        <p>🛠️ It&apos;s time to roll up your sleeves and make some positive changes! Here&apos;s your action plan:</p>
-                        <ul className="list-disc list-inside pl-4 space-y-2">
-                          <li>Create a detailed budget to understand where every dollar is going</li>
-                          <li>Prioritize paying down high-interest debt</li>
-                          <li>Simultaneously build your emergency fund</li>
-                          <li>Look for ways to increase your income (side hustle, raise at work)</li>
-                          <li>Educate yourself - consider taking financial literacy courses or reading personal finance books</li>
-                        </ul>
-                        <p>Remember, small, consistent steps can lead to significant improvements over time. You&apos;ve got this! 🌱</p>
-                      </>
-                    )}
-                    {financialHealthScore < 40 && (
-                      <>
-                        <p>🚨 Your financial health needs some serious TLC, but don&apos;t worry - everyone starts somewhere!</p>
-                        <p>🏁 You&apos;ve already taken the first step by acknowledging it. Here&apos;s your financial reset plan:</p>
-                        <ul className="list-disc list-inside pl-4 space-y-2">
-                          <li>List all your debts and create a repayment plan, focusing on high-interest debts first</li>
-                          <li>Start an emergency fund, even if it&apos;s small at first</li>
-                          <li>Track every expense for a month to understand your spending patterns</li>
-                          <li>Look for immediate ways to reduce expenses and increase income</li>
-                          <li>Seek free financial counseling if available in your area</li>
-                        </ul>
-                        <p>Remember, every financial turnaround story starts with a decision to change. You can do this! 💪</p>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Financial Health Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Radar data={radarChartData} options={{ responsive: true, scales: { r: { min: 0, max: 100 } } }} />
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+          
         </Tabs>
       </main>
 
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-wrap justify-between items-center">
-            <div className="w-full md:w-1/3 text-center md:text-left">
-              <h3 className="text-lg font-semibold mb-2">FinancialFlow 💸</h3>
-              <p className="text-sm">Your personal finance companion</p>
-            </div>
-            <div className="w-full md:w-1/3 text-center mt-4 md:mt-0">
-              <p className="text-sm">&copy; </p>
-              <p className="text-sm">&copy; </p>
-              <Button variant="link" className="mt-4 bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600 transition-colors duration-300 font-semibold py-2 px-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105" onClick={() => setShowTosDialog(true)}>
-                Terms of Service ⚠️
-              </Button>
-            </div>
-            <div className="w-full md:w-1/3 text-center md:text-right mt-4 md:mt-0">
-              <div className="flex justify-center md:justify-end space-x-4">
-                
-                
-                
-              </div>
-              <Button 
-                variant="outline" 
-                className="mt-4 bg-red-500 hover:bg-red-600 text-white border-red-500 hover:border-red-600 transition-colors duration-300 font-semibold py-2 px-4 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105"
-                onClick={() => setShowResetDialog(true)}
-              >
-                Reset All Data ⚠️
-              </Button>
-            </div>
-          </div>
-        </div>
-      </footer>
+      
 
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
         <DialogContent className="bg-white text-black">
@@ -1806,70 +1028,6 @@ export default function FinanceTracker() {
             <Button onClick={saveSettings}>
               Save Changes
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
-        <DialogContent className="bg-white text-black">
-          <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete all your financial data and reset the application to its initial state.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowResetDialog(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={resetAllData}>Yes, Reset All Data</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showTosDialog} onOpenChange={setShowTosDialog}>
-        <DialogContent className="bg-white text-black max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Terms of Service ⚠️</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold">1. Acceptance of Terms</h2>
-              <p>By accessing or using FinancialFlow, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service. This web application is developed from scratch and maintained in its entirety by Sunny Jayendra Patel</p>
-
-              <h2 className="text-xl font-bold">2. Description of Service</h2>
-              <p>FinancialFlow is a personal finance management tool designed to help users track their income, expenses, and financial goals. This service is provided for personal use only and should not be used for professional financial advice.</p>
-
-              <h2 className="text-xl font-bold">3. User Responsibilities</h2>
-              <p>You are responsible for maintaining the confidentiality financial information. You agree to accept responsibility for all activities that occur under your account.</p>
-
-              <h2 className="text-xl font-bold">4. Intellectual Property</h2>
-              <p>FinancialFlow is the sole property of Sunny Jayendra Patel. The service, including its original content, features, and functionality, is protected by international copyright, trademark, patent, trade secret, and other intellectual property or proprietary rights laws.</p>
-
-              <h2 className="text-xl font-bold">5. Prohibited Uses</h2>
-              <p>You agree not to use FinancialFlow:</p>
-              <ul className="list-disc list-inside">
-                <li>For any unlawful purpose or to solicit the performance of any illegal activity</li>
-                <li>To harass, abuse, or harm another person</li>
-                <li>To impersonate or attempt to impersonate the author, another user, or any other person or entity</li>
-                <li>To engage in any other conduct that restricts or inhibits anyone&apos;s use or enjoyment of the Service, or which, as determined by us, may harm or offend the author or users of the Service or expose them to liability</li>
-              </ul>
-
-              <h2 className="text-xl font-bold">6. Disclaimer</h2>
-              <p>FinancialFlow is provided on an &quot;as is&quot; and &quot;as available&quot; basis. The author makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties, including without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</p>
-
-              <h2 className="text-xl font-bold">7. Limitation of Liability</h2>
-              <p>In no event shall the author be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.</p>
-
-              <h2 className="text-xl font-bold">8. Changes to Terms</h2>
-              <p>The author reserves the right, at his sole discretion, to modify or replace these Terms at any time. It is your responsibility to check these Terms periodically for changes.</p>
-
-              
-
-              
-              <p></p>
-            </div>
-          </ScrollArea>
-          <DialogFooter>
-            <Button onClick={() => setShowTosDialog(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
