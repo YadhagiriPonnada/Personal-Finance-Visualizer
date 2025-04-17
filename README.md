@@ -21,7 +21,7 @@
 
 ## 1. Introduction
 
-**FinancialFlow 💸** is a personal finance web app built to help users track their income, expenses, savings, and goals, all while visualizing financial data with rich, interactive charts 📊. This app aims to give users control over their financial health by offering deep insights and customizable tracking features.
+**FinancialFlow 💸** is a personal finance web app built to help users track their income, expenses and savings, all while visualizing financial data with rich, interactive charts 📊. This app aims to give users control over their financial health by offering deep insights and customizable tracking features.
 
 ## 2. Architecture Overview
 
@@ -29,6 +29,7 @@ The architecture of FinancialFlow is primarily based on **Next.js** for server-s
 
 ### Key Highlights:
 - **Frontend**: Built with **Typescript** and **Next.js** for fast and responsive experiences.
+- **DataBase**: **MangoDB**
 - **State Management**: Implemented using React Hooks (`useState`, `useEffect`) for local state.
 - **Modular UI**: Reusable components ensure scalability and maintainability.
 - **Animations**: Powered by **Framer Motion** for smooth transitions.
@@ -49,26 +50,12 @@ The application leverages modern technologies to deliver an intuitive user exper
 ### ✨ **Income and Expense Tracking**:
 - Users can log transactions, which are immediately reflected in their balance and monthly summaries.
   
-### 🛠 **Budget Management**:
-- Users can define budget limits for different spending categories and monitor their actual spending against those limits.
-
-### 🎯 **Goal Setting**:
-- Set long-term financial goals (e.g., saving for a house) and track progress using a visual goal tracker.
-
-### 📊 **Data Visualization**:
-- Multiple chart types (Line, Bar, Doughnut, and Radar) give users a visual representation of income, expenses, and savings over time.
-
-### 💰 **Financial Health Score**:
-- The app calculates a financial health score based on the user's spending, savings, and debt ratios. This score is dynamically updated as the user's financial habits change.
 
 ## 5. State Management
 
 State management in **FinancialFlow** is handled using React's `useState` and `useEffect` hooks to manage key application states:
 - **balance**: Current balance of the user.
 - **income** & **expenses**: Income and expense data for the current period.
-- **transactions**: An array holding all the transactions (income/expenses) added by the user.
-- **goals**: An array tracking user-defined financial goals.
-- **budgetCategories**: An array representing different spending categories, each with a defined budget limit.
 
 The app ensures a reactive UI, updating in real-time when users input new data.
 
@@ -77,7 +64,6 @@ The app ensures a reactive UI, updating in real-time when users input new data.
 FinancialFlow uses the browser's **local storage** for persistent data. This ensures that user data (balance, income, transactions, etc.) is retained across sessions without the need for user accounts. Key data stored includes:
 - User's initial balance, income, and monthly expenses.
 - All transactions (income and expenses).
-- Defined goals and budgets.
 
 Data is read from local storage on app load, and updates are saved back whenever a user makes changes.
 
@@ -128,39 +114,3 @@ FinancialFlow can be tested using a combination of unit tests, integration tests
 - **End-to-End Tests**: Simulate user interactions across the app using tools like **Cypress** or **Playwright**.
 
 Automated testing ensures that the app remains stable as new features are added.
-
-## 12. Future Enhancements
-
-Here are some planned features and improvements for **FinancialFlow**:
-
-- **User Authentication**: Implement user accounts and authentication, allowing users to securely store their data in the cloud and access it across devices.
-- **Cloud Storage**: Shift from local storage to a backend database, enabling persistent and secure data storage.
-- **Expense Prediction**: Use machine learning models to predict future expenses based on historical data and provide smarter financial recommendations.
-- **Investment Tracking**: Allow users to track their investments, along with insights into portfolio performance.
-- **Multi-Currency Support**: Add support for tracking transactions in multiple currencies, with automatic exchange rate conversions.
-- **Expense Categorization Automation**: Automatically categorize expenses based on transaction descriptions using AI-powered classification.
-- **Financial Reports**: Generate detailed reports for specific time periods, allowing users to export their financial data.
-
-## 13. Contributing
-
-Contributions to **FinancialFlow** are welcome! Follow these steps to contribute:
-
-1. **Fork** the repository on GitHub.
-2. **Create a feature branch** (`git checkout -b feature-branch`).
-3. **Commit your changes** with descriptive messages.
-4. **Push to the branch** (`git push origin feature-branch`).
-5. **Submit a pull request** to the main repository.
-
-Please ensure all new code includes appropriate tests and adheres to the project's coding standards.
-
-## 14. License
-
-This project is licensed under the **MIT License**. You are free to use, and distribute this software, but attribution to the original author is required.
-
-## 15. Contact
-
-If you have any questions, feedback, or suggestions, feel free to reach out:
-
-- **Sunny Patel**: [sunnypatel124555@gmail.com](mailto:sunnypatel124555@gmail.com)
-
-You can also contribute or report issues directly via the [GitHub repository](https://github.com/sunnypatell/financialflow).
