@@ -397,16 +397,16 @@ export default function FinanceTracker() {
         {
           data: [Math.max(0, chequingBalance), savingsBalance, debt, netWorth],
           backgroundColor: [
-            'rgba(75, 192, 192, 0.6)',
-            'rgba(255, 206, 86, 0.6)',
+            'rgba(199, 46, 171, 0.6)',
+            'rgba(204, 193, 197, 0.6)',
             'rgba(255, 99, 132, 0.6)',
             'rgba(153, 102, 255, 0.6)',
           ],
           borderColor: [
-            'rgba(75, 192, 192, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(255, 99, 132, 1)',
-            'rgba(153, 102, 255, 1)',
+            'rgb(53, 233, 188)',
+            'rgb(166, 33, 35)',
+            'rgb(59, 93, 28)',
+            'rgb(90, 80, 33)',
           ],
           borderWidth: 1,
         },
@@ -573,7 +573,7 @@ export default function FinanceTracker() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-green bg-opacity-50 flex items-center justify-center z-50"
           >
             <Card className="w-full max-w-md">
               <CardHeader>
@@ -641,7 +641,7 @@ export default function FinanceTracker() {
         )}
       </AnimatePresence>
 
-      <header className="sticky top-0 z-40 bg-gray-800 shadow-md">
+      <header className="sticky top-0 z-40 bg-blue-800 shadow-md">
         <nav className="container mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
             <div className="flex space-x-4">
@@ -718,9 +718,9 @@ export default function FinanceTracker() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7 bg-gray-800">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-gray-700 text-white">Dashboard</TabsTrigger>
-            <TabsTrigger value="transactions" className="data-[state=active]:bg-gray-700 text-white">Transactions</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-7 bg-pink-800">
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-pink-700 text-white">Dashboard</TabsTrigger>
+            <TabsTrigger value="transactions" className="data-[state=active]:bg-pink-700 text-white">Transactions</TabsTrigger>
             
           </TabsList>
           <TabsContent value="dashboard">
@@ -812,7 +812,7 @@ export default function FinanceTracker() {
                 <CardContent>
                   <ScrollArea className="h-[300px]">
                     {generateBudgetRecommendations().map((recommendation, index) => (
-                      <div key={index} className="flex items-start space-x-4 mb-4 bg-gray-800 p-4 rounded-lg">
+                      <div key={index} className="flex items-start space-x-4 mb-4 bg-yellow-800 p-4 rounded-lg">
                         <div className="flex-shrink-0 mt-1">
                           {recommendation.icon}
                         </div>
